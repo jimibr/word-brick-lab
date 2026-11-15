@@ -60,7 +60,7 @@ on **main** with **publish** checked.
 
 ## Workflows and normalization
 
-Both entry points produce the same versioned `Project` model. Tokens preserve visible text, case and Unicode NFC form. A separate normalized key lowercases English and maps curly apostrophes to straight apostrophes only for deduplication. Visible user text is never silently rewritten. The tokenizer recognizes Unicode words, apostrophes and punctuation instead of splitting on whitespace. Punctuation may be its own brick or attach to the preceding token; contractions may remain whole or split at the apostrophe.
+Both entry points produce the same versioned `Project` model. The project stores the original sentence text. The tokenizer recognizes Unicode letters and numbers, apostrophes and punctuation. Punctuation can form a separate brick or attach to the preceding token. Contractions can remain whole or split into a stem and a suffix, with any curly apostrophe in the suffix converted to a straight one. The key used to group equivalent tokens applies Unicode NFC normalization, lowercases using the English locale, and converts curly apostrophes to straight ones.
 
 Reusable quantity mode takes the highest multiplicity found in any one enabled sentence. Simultaneous mode sums multiplicities across all enabled sentences. A manual quantity stays visible beside the computed quantity.
 
@@ -90,7 +90,7 @@ Print with the open underside on the build plate. A merged STL supports a layer-
 
 Print a short 2×2 or 2×4 calibration brick before a batch to check the fit with your printer and material.
 
-The bed packer uses fixed margins and gaps, permits 90° rotation when needed, preserves every requested instance, and creates additional numbered plates rather than dropping parts. `manifest.json` records every placement, and the ZIP contains a combined STL with separate islands for each plate.
+The bed packer uses the configured margins and gaps, allows 90° rotation when enabled and needed for fit, and opens additional plates as needed. The ZIP contains one numbered layout STL per plate, such as `layouts/plate-01.stl`. Each layout STL keeps the bricks as separate solids, and `manifest.json` records their placements.
 
 ## Calibration
 
@@ -114,7 +114,7 @@ Record material, nozzle, layer height, extrusion width, slicer and XY compensati
 - `src/components`: 3D and bed previews
 - `src/i18n`: Czech/English UI copy
 - `e2e` and colocated `*.test.ts`: browser and unit tests
-- `docs/architecture.md`: geometry decisions and risks
+- `docs/architecture.md`: browser geometry and export architecture
 
 ## Known limitations and roadmap
 

@@ -1,5 +1,6 @@
-import {readFileSync,writeFileSync} from 'node:fs';
+import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
+import {stdout} from 'node:process';
 
 const root=resolve(import.meta.dirname,'..');
 const lock=JSON.parse(readFileSync(resolve(root,'package-lock.json'),'utf8'));
@@ -19,4 +20,4 @@ rows.sort((a,b)=>a.scope.localeCompare(b.scope)||a.name.localeCompare(b.name)||a
 const counts=new Map();
 for(const row of rows)counts.set(row.license,(counts.get(row.license)??0)+1);
 const lines=['# Installed dependency licenses','',`Generated from \`package-lock.json\` on ${new Date().toISOString().slice(0,10)}. Optional packages not installed on this platform are omitted.`,'','## Summary','','| License expression | Packages |','|---|---:|',...[...counts].sort((a,b)=>b[1]-a[1]).map(([license,count])=>`| ${license} | ${count} |`),'','## Packages','','| Scope | Package | Version | Declared license |','|---|---|---:|---|',...rows.map(row=>`| ${row.scope} | ${row.name.replaceAll('|','\\|')} | ${row.version} | ${row.license.replaceAll('|','\\|')} |`),'','The project license and the full notice for bundled MgOpen-derived font data are in `LICENSE` and `THIRD_PARTY_NOTICES.md`.',''];
-writeFileSync(resolve(root,'docs/dependency-licenses.md'),lines.join('\n'));
+stdout.write(lines.join('\n'));

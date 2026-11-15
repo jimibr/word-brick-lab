@@ -16,13 +16,13 @@ third-party software and font data under their respective licenses.
 | Zod | MIT | https://github.com/colinhacks/zod |
 
 The corresponding copyright and license texts are included in the installed
-packages. A generated inventory of the complete installed dependency tree is
-maintained in `docs/dependency-licenses.md`.
+packages. Run `npm run --silent licenses` to print a Markdown inventory of
+installed dependencies for the current platform.
 
-`manifold-3d` installs an optional native `sharp`/libvips toolchain used by its
-model tooling. That optional package declares `Apache-2.0 AND
-LGPL-3.0-or-later`. WordBrickLab does not import `sharp`, and Vite does not
-include it or libvips in the browser distribution.
+`manifold-3d` lists `sharp` as an optional dependency for its model tooling.
+`sharp` declares `Apache-2.0`. The platform-specific package
+`@img/sharp-win32-x64`, for example, declares `Apache-2.0 AND LGPL-3.0-or-later`.
+The browser bundle excludes the `sharp` and libvips binaries.
 
 ## Helvetiker / MgOpen font data
 
