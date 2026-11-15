@@ -42,12 +42,23 @@ const cats = [
   "other",
 ] as const;
 
+function browserLocale(): Project["locale"] {
+  const languages = navigator.languages.length
+    ? navigator.languages
+    : [navigator.language];
+  for (const language of languages) {
+    const primary = language.toLowerCase().split("-")[0];
+    if (primary === "cs" || primary === "en") return primary;
+  }
+  return "en";
+}
+
 function App() {
   const [saving, setSaving] = useState(localSavingEnabled);
   const [project, setProject] = useState<Project>(() => {
     const saved = saving ? loadProject() : null;
     if (saved) return saved;
-    const initial = { ...emptyProject(), locale: "cs" as const };
+    const initial = { ...emptyProject(), locale: browserLocale() };
     return contentProject(initial, "I am ready.\nYou are at home.");
   });
   const [draft, setDraft] = useState(() =>
@@ -81,6 +92,9 @@ function App() {
   const privacyDialog = useRef<HTMLDialogElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const locale = project.locale;
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
   useEffect(() => {
     const stopIfCleared = () => {
       if (!localSavingEnabled()) setSaving(false);

@@ -1,6 +1,20 @@
 import { readFile } from "node:fs/promises";
 import { strFromU8, unzipSync } from "fflate";
 import { test, expect } from "@playwright/test";
+test.use({ locale: "cs-CZ" });
+
+test.describe("browser language", () => {
+  test.use({ locale: "de-DE" });
+
+  test("falls back to English for an unsupported language", async ({ page }) => {
+    await page.goto("./");
+    await expect(
+      page.getByRole("button", { name: "Privacy", exact: true }),
+    ).toBeVisible();
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  });
+});
+
 const nav = (page: import("@playwright/test").Page, name: RegExp | string) =>
   page.getByRole("navigation").getByRole("button", { name });
 async function kit(page: import("@playwright/test").Page) {
