@@ -1361,6 +1361,22 @@ main {
   }
 }
 @media (max-width: 380px) {
+  .app-header {
+    padding-inline: 12px;
+  }
+  .brand {
+    gap: 6px;
+  }
+  .brand-mark {
+    width: 32px;
+  }
+  .brand h1 {
+    font-size: 18px;
+  }
+  .header-actions button {
+    min-width: 44px;
+    padding-inline: 7px;
+  }
   .navigation {
     padding: 0 12px;
   }
