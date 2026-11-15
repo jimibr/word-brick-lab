@@ -15,7 +15,10 @@ import {
 import { pack } from "./layout/pack";
 import { t } from "./i18n";
 import {
+  clearLocalProject,
+  enableLocalSaving,
   loadProject,
+  localSavingEnabled,
   saveProject,
   parseProject,
   downloadBlob,
@@ -40,8 +43,9 @@ const cats = [
 ] as const;
 
 function App() {
+  const [saving, setSaving] = useState(localSavingEnabled);
   const [project, setProject] = useState<Project>(() => {
-    const saved = loadProject();
+    const saved = saving ? loadProject() : null;
     if (saved) return saved;
     const initial = { ...emptyProject(), locale: "cs" as const };
     return contentProject(initial, "I am ready.\nYou are at home.");
@@ -73,10 +77,19 @@ function App() {
     null,
   );
   const [notice, setNotice] = useState("");
+  const [privacyNotice, setPrivacyNotice] = useState("");
+  const privacyDialog = useRef<HTMLDialogElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const locale = project.locale;
   useEffect(() => {
-    if (saveProject(project)) return;
+    const stopIfCleared = () => {
+      if (!localSavingEnabled()) setSaving(false);
+    };
+    window.addEventListener("storage", stopIfCleared);
+    return () => window.removeEventListener("storage", stopIfCleared);
+  }, []);
+  useEffect(() => {
+    if (!saving || !localSavingEnabled() || saveProject(project)) return;
     const timer = setTimeout(
       () =>
         setNotice(
@@ -87,7 +100,7 @@ function App() {
       0,
     );
     return () => clearTimeout(timer);
-  }, [project]);
+  }, [project, saving]);
   useEffect(() => {
     if (source !== "sentences") return;
     const timer = setTimeout(
@@ -97,6 +110,64 @@ function App() {
     return () => clearTimeout(timer);
   }, [draft, source]);
   const say = (cs: string, en: string) => (locale === "cs" ? cs : en);
+  function startLocalSaving() {
+    const current =
+      source === "sentences" ? contentProject(project, draft) : project;
+    if (
+      loadProject() &&
+      !window.confirm(
+        say(
+          "Nahradit dříve uložený projekt právě otevřeným projektem?",
+          "Replace the previously saved project with the current project?",
+        ),
+      )
+    )
+      return;
+    if (enableLocalSaving(current)) {
+      setProject(current);
+      setSaving(true);
+      setPrivacyNotice("");
+    } else {
+      setPrivacyNotice(
+        say(
+          "Ukládání se nepodařilo zapnout.",
+          "Could not enable local saving.",
+        ),
+      );
+    }
+  }
+  function restoreLocalProject() {
+    const saved = loadProject();
+    if (!saved) {
+      setPrivacyNotice(
+        say(
+          "Uložený projekt se nepodařilo najít.",
+          "No saved project was found.",
+        ),
+      );
+      return;
+    }
+    setProject(saved);
+    setDraft(saved.sentences.map((sentence) => sentence.text).join("\n"));
+    setSource(saved.kitId ? "kit" : "sentences");
+    setSelected(undefined);
+    setStep(1);
+    privacyDialog.current?.close();
+  }
+  function stopLocalSaving() {
+    setSaving(false);
+    setPrivacyNotice(
+      clearLocalProject()
+        ? say(
+            "Místní uložení bylo smazáno.",
+            "The locally saved project was deleted.",
+          )
+        : say(
+            "Místní uložení se nepodařilo smazat.",
+            "Could not delete the locally saved project.",
+          ),
+    );
+  }
   const { valid, layout, total } = useMemo(() => {
     const valid = project.bricks.filter(
       (b) => !b.errors.length && b.quantity > 0,
@@ -338,9 +409,21 @@ function App() {
           </div>
         </div>
         <div className="header-actions">
-          <span className="autosave">
-            {say("Ukládá se v tomto zařízení", "Saved on this device")}
-          </span>
+          {saving && (
+            <span className="autosave">
+              {say("Ukládá se v tomto zařízení", "Saved on this device")}
+            </span>
+          )}
+          <button
+            type="button"
+            className="locale"
+            onClick={() => {
+              setPrivacyNotice("");
+              privacyDialog.current?.showModal();
+            }}
+          >
+            {say("Soukromí", "Privacy")}
+          </button>
           <button
             className="locale"
             onClick={() =>
@@ -1249,13 +1332,69 @@ function App() {
                 )}
               </>
             </div>
-            <div className="warning">
-              ⚠{" "}
-              {t(locale, "fitWarning")}
-            </div>
+            <div className="warning">⚠ {t(locale, "fitWarning")}</div>
           </div>
         )}
       </main>
+      <dialog
+        className="privacy-dialog"
+        ref={privacyDialog}
+        aria-labelledby="privacy-title"
+      >
+        <h2 id="privacy-title">{say("Soukromí", "Privacy")}</h2>
+        <p>
+          {say(
+            "Věty, projekty i exporty se zpracovávají v prohlížeči. Aplikace je nikam neposílá a nepoužívá cookies ani analytiku.",
+            "Sentences, projects, and exports are processed in your browser. The app sends none of this content anywhere and uses no cookies or analytics.",
+          )}
+        </p>
+        <p>
+          {say(
+            "Pokud zapnete ukládání, projekt a volba ukládání zůstanou v místním úložišti tohoto prohlížeče, dokud je nesmažete.",
+            "If you enable saving, your project and saving preference stay in this browser’s local storage until you delete them.",
+          )}
+        </p>
+        <p>
+          {say(
+            "Web provozuje jimibr a hostuje ho GitHub Pages. GitHub při návštěvě zaznamenává IP adresu pro bezpečnostní účely.",
+            "This site is maintained by jimibr and hosted on GitHub Pages. GitHub logs visitors’ IP addresses for security purposes.",
+          )}{" "}
+          <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">
+            {say("Zásady ochrany soukromí GitHubu", "GitHub Privacy Statement")}
+          </a>
+          {" · "}
+          <a href="https://github.com/jimibr">
+            {say("Kontakt na provozovatele", "Contact the maintainer")}
+          </a>
+        </p>
+        <div className="privacy-actions">
+          {!saving && (
+            <>
+              <button type="button" onClick={startLocalSaving}>
+                {say(
+                  "Zapnout ukládání v tomto prohlížeči",
+                  "Enable saving in this browser",
+                )}
+              </button>
+              <button type="button" onClick={restoreLocalProject}>
+                {say("Obnovit uložený projekt", "Restore a saved project")}
+              </button>
+            </>
+          )}
+          <button type="button" onClick={stopLocalSaving}>
+            {saving
+              ? say(
+                  "Vypnout ukládání a smazat uložený projekt",
+                  "Turn off saving and delete the saved project",
+                )
+              : say("Smazat uložený projekt", "Delete the saved project")}
+          </button>
+        </div>
+        {privacyNotice && <p role="status">{privacyNotice}</p>}
+        <form method="dialog">
+          <button type="submit">{say("Zavřít", "Close")}</button>
+        </form>
+      </dialog>
     </div>
   );
 }

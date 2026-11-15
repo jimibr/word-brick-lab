@@ -128,6 +128,12 @@ test("draft autosaves, project round trip and locale remain consistent", async (
   await page.goto("./");
   await page.getByLabel("Věty", { exact: true }).fill("I have a cat.");
   await expect(page.locator(".preview-caption")).toContainText("5");
+  expect(await page.evaluate(() => localStorage.length)).toBe(0);
+  await page.getByRole("button", { name: "Soukromí", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Zapnout ukládání v tomto prohlížeči" })
+    .click();
+  await page.getByRole("button", { name: "Zavřít", exact: true }).click();
   await page.reload();
   await expect(page.getByLabel("Věty", { exact: true })).toHaveValue(
     "I have a cat.",
@@ -161,6 +167,34 @@ test("draft autosaves, project round trip and locale remain consistent", async (
   await expect(
     page.getByLabel("Global font size", { exact: true }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Privacy", exact: true }).click();
+  await page
+    .getByRole("button", {
+      name: "Turn off saving and delete the saved project",
+    })
+    .click();
+  await expect(page.getByRole("dialog").getByRole("status")).toContainText(
+    "was deleted",
+  );
+  expect(await page.evaluate(() => localStorage.length)).toBe(0);
+});
+
+test("previously saved projects are restored on request", async ({ page }) => {
+  const sample = await readFile("samples/to-be.wordbrick.json", "utf8");
+  await page.addInitScript((raw) => {
+    localStorage.setItem("wordbricklab.project.v1", raw);
+  }, sample);
+  await page.goto("./");
+  await expect(page.getByLabel("Věty", { exact: true })).toHaveValue(
+    "I am ready.\nYou are at home.",
+  );
+  await page.getByRole("button", { name: "Soukromí", exact: true }).click();
+  await page.getByRole("button", { name: "Obnovit uložený projekt" }).click();
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await expect(
+    page.getByRole("button", { name: "Privacy", exact: true }),
+  ).toBeVisible();
+  expect(await page.evaluate(() => localStorage.length)).toBe(1);
 });
 
 test("legacy tile project exports classic bricks", async ({ page }) => {

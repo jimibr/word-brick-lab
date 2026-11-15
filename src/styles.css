@@ -198,7 +198,32 @@ input[type="range"] {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: clamp(6px, 2vw, 24px);
+}
+.privacy-dialog {
+  width: min(36rem, calc(100% - 2rem));
+  max-height: calc(100% - 2rem);
+  padding: 1.25rem;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: white;
+  color: inherit;
+}
+.privacy-dialog::backdrop {
+  background: rgb(18 11 36 / 55%);
+}
+.privacy-dialog p,
+.privacy-dialog form {
+  margin-top: 0.85rem;
+}
+.privacy-dialog a {
+  color: var(--accent);
+}
+.privacy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 .autosave {
   font-size: 12px;

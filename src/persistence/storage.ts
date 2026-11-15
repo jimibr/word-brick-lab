@@ -13,6 +13,35 @@ import {
 } from "../domain/limits";
 
 const key = "wordbricklab.project.v1";
+const savingKey = "wordbricklab.local-saving";
+
+export function localSavingEnabled() {
+  try {
+    return localStorage.getItem(savingKey) === "enabled";
+  } catch {
+    return false;
+  }
+}
+
+export function enableLocalSaving(project: Project) {
+  if (!saveProject(project)) return false;
+  try {
+    localStorage.setItem(savingKey, "enabled");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearLocalProject() {
+  try {
+    localStorage.removeItem(savingKey);
+    localStorage.removeItem(key);
+    return true;
+  } catch {
+    return false;
+  }
+}
 const id = z.string().min(1).max(100);
 const text = z.string().max(MAX_PROJECT_TEXT);
 const category = z.enum([
@@ -147,7 +176,11 @@ export function parseProject(raw: string): Project {
     ...data,
     schemaVersion: SCHEMA_VERSION,
     // Legacy tile projects retain their contents and use the classic brick body.
-    geometry: { ...DEFAULT_GEOMETRY, ...data.geometry, construction: "fullBrick" },
+    geometry: {
+      ...DEFAULT_GEOMETRY,
+      ...data.geometry,
+      construction: "fullBrick",
+    },
     export: { ...DEFAULT_EXPORT, ...data.export },
   };
 }
