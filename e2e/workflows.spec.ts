@@ -6,7 +6,9 @@ test.use({ locale: "cs-CZ" });
 test.describe("browser language", () => {
   test.use({ locale: "de-DE" });
 
-  test("falls back to English for an unsupported language", async ({ page }) => {
+  test("falls back to English for an unsupported language", async ({
+    page,
+  }) => {
     await page.goto("./");
     await expect(
       page.getByRole("button", { name: "Privacy", exact: true }),
@@ -330,6 +332,68 @@ test("ZIP keeps separate geometry for punctuation with the same sanitized filena
     return files[copy];
   });
   expect(copies[0]).not.toEqual(copies[1]);
+});
+
+test("help page tells the print story and links back into the workflow", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("./#help");
+  await expect(
+    page.getByRole("heading", {
+      name: /Ze slov rovnou do ruky|From words on screen to words in hand/,
+    }),
+  ).toBeVisible();
+  await expect(page.locator(".help-page img")).toHaveCount(4);
+  for (const image of await page.locator(".help-page img").all()) {
+    await image.scrollIntoViewIfNeeded();
+  }
+  await expect
+    .poll(() =>
+      page
+        .locator(".help-page img")
+        .evaluateAll((images) =>
+          images.every(
+            (image) =>
+              image instanceof HTMLImageElement && image.naturalWidth > 0,
+          ),
+        ),
+    )
+    .toBe(true);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ path: test.info().outputPath("help-desktop.png") });
+
+  await page
+    .getByRole("button", {
+      name: /Přejít k tisku a exportu|Go to print and export/,
+    })
+    .click();
+  await expect(
+    page.getByRole("heading", {
+      name: /Připraveno pro vaši tiskárnu|Ready for your printer/,
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: /Jak na to|Help/, exact: true })
+    .click();
+
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.goto("./#help");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({ path: test.info().outputPath("help-mobile.png") });
+  await page.locator(".help-step-photo--markers").scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: test.info().outputPath("help-mobile-markers.png"),
+  });
 });
 
 test("switching sentence sources preserves an uncommitted draft", async ({

@@ -30,6 +30,7 @@ import { safeFilename } from "./geometry/createBrick";
 import { BODY_HEIGHT } from "./geometry/dimensions";
 import type { GeometryRequest, GeometryResponse } from "./workers/protocol";
 import { SettingIllustration } from "./components/SettingIllustration";
+import { HelpPage } from "./components/HelpPage";
 import "./styles.css";
 
 const cats = [
@@ -65,11 +66,16 @@ function App() {
     project.sentences.map((s) => s.text).join("\n"),
   );
   const [step, setStep] = useState(() =>
-    window.location.hash === "#bed-dimensions" ? 4 : 1,
+    window.location.hash === "#help"
+      ? 5
+      : window.location.hash === "#bed-dimensions"
+        ? 4
+        : 1,
   );
   useEffect(() => {
     const openBedSettings = () => {
       if (window.location.hash === "#bed-dimensions") setStep(4);
+      if (window.location.hash === "#help") setStep(5);
     };
     window.addEventListener("hashchange", openBedSettings);
     return () => window.removeEventListener("hashchange", openBedSettings);
@@ -92,6 +98,9 @@ function App() {
   const privacyDialog = useRef<HTMLDialogElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const locale = project.locale;
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
@@ -379,11 +388,21 @@ function App() {
     }
   }
   function navigateTo(next: number) {
-    if (window.location.hash === "#bed-dimensions") {
+    if (
+      window.location.hash === "#bed-dimensions" ||
+      window.location.hash === "#help"
+    ) {
       window.history.replaceState(
         null,
         "",
         window.location.pathname + window.location.search,
+      );
+    }
+    if (next === 5) {
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${window.location.search}#help`,
       );
     }
     if (step === 1 && next !== 1 && source === "sentences") applyDraft();
@@ -428,6 +447,19 @@ function App() {
               {say("Ukládá se v tomto zařízení", "Saved on this device")}
             </span>
           )}
+          <button
+            type="button"
+            className="locale help-button"
+            aria-current={step === 5 ? "page" : undefined}
+            onClick={() => navigateTo(5)}
+          >
+            <span className="help-button-mark" aria-hidden="true">
+              ?
+            </span>
+            <span className="help-button-label">
+              {say("Jak na to", "Help")}
+            </span>
+          </button>
           <button
             type="button"
             className="locale"
@@ -477,72 +509,74 @@ function App() {
         </span>
       </div>
       <main>
-        <div className={step === 1 ? "page-heading mission" : "page-heading"}>
-          <div>
-            <h2>
-              {step === 1
-                ? say("Proměňte slova v kostky", "Turn words into bricks")
-                : step === 2
-                  ? say("Vaše kostky", "Your bricks")
-                  : step === 3
-                    ? say(
-                        "Připraveno pro vaši tiskárnu",
-                        "Ready for your printer",
-                      )
-                    : say(
-                        "Každý detail pod kontrolou",
-                        "Every detail under control",
-                      )}
-            </h2>
-            <p>
-              {step === 1
-                ? say(
-                    "Napište větu a připravte si slovní kostky pro 3D tisk. Poskládejte z nich věty na procvičování jazyků nebo vlastní vzkaz pro radost.",
-                    "Write a sentence and make word bricks to 3D print. Use them to practise a language or leave a playful message.",
-                  )
-                : step === 2
+        {step !== 5 && (
+          <div className={step === 1 ? "page-heading mission" : "page-heading"}>
+            <div>
+              <h2>
+                {step === 1
+                  ? say("Proměňte slova v kostky", "Turn words into bricks")
+                  : step === 2
+                    ? say("Vaše kostky", "Your bricks")
+                    : step === 3
+                      ? say(
+                          "Připraveno pro vaši tiskárnu",
+                          "Ready for your printer",
+                        )
+                      : say(
+                          "Každý detail pod kontrolou",
+                          "Every detail under control",
+                        )}
+              </h2>
+              <p>
+                {step === 1
                   ? say(
-                      "Vyberte slovo, prohlédněte si model a upravte počet kusů.",
-                      "Select a word, inspect the model and adjust quantities.",
+                      "Napište větu a připravte si slovní kostky pro 3D tisk. Poskládejte z nich věty na procvičování jazyků nebo vlastní vzkaz pro radost.",
+                      "Write a sentence and make word bricks to 3D print. Use them to practise a language or leave a playful message.",
                     )
-                  : step === 3
+                  : step === 2
                     ? say(
-                        "Zkontrolujte rozložení a stáhněte celou sadu najednou.",
-                        "Review the arrangement and download your complete set.",
+                        "Vyberte slovo, prohlédněte si model a upravte počet kusů.",
+                        "Select a word, inspect the model and adjust quantities.",
                       )
-                    : say(
-                        "Všechna nastavení jsou dostupná rovnou. Hodnoty jsou v milimetrech.",
-                        "All settings are available here. Values are in millimetres.",
-                      )}
-            </p>
-          </div>
-          {step === 1 && (
-            <div className="mission-examples">
-              <div className="mission-example">
-                <p>{say("Na procvičování", "For language practice")}</p>
-                <div className="mission-words">
-                  <span>I</span>
-                  <span>have</span>
-                  <span>a</span>
-                  <span>cat.</span>
-                </div>
-              </div>
-              <div className="mission-example">
-                <p>{say("Na vzkazy", "For messages")}</p>
-                <div className="mission-words mission-words--message">
-                  <span>{say("Mám", "You")}</span>
-                  <span>{say("tě", "are")}</span>
-                  <span>{say("rád!", "amazing!")}</span>
-                </div>
-              </div>
+                    : step === 3
+                      ? say(
+                          "Zkontrolujte rozložení a stáhněte celou sadu najednou.",
+                          "Review the arrangement and download your complete set.",
+                        )
+                      : say(
+                          "Všechna nastavení jsou dostupná rovnou. Hodnoty jsou v milimetrech.",
+                          "All settings are available here. Values are in millimetres.",
+                        )}
+              </p>
             </div>
-          )}
-          {step === 2 && (
-            <button className="primary" onClick={() => navigateTo(3)}>
-              {say("Připravit k tisku", "Prepare for printing")}
-            </button>
-          )}
-        </div>
+            {step === 1 && (
+              <div className="mission-examples">
+                <div className="mission-example">
+                  <p>{say("Na procvičování", "For language practice")}</p>
+                  <div className="mission-words">
+                    <span>I</span>
+                    <span>have</span>
+                    <span>a</span>
+                    <span>cat.</span>
+                  </div>
+                </div>
+                <div className="mission-example">
+                  <p>{say("Na vzkazy", "For messages")}</p>
+                  <div className="mission-words mission-words--message">
+                    <span>{say("Mám", "You")}</span>
+                    <span>{say("tě", "are")}</span>
+                    <span>{say("rád!", "amazing!")}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {step === 2 && (
+              <button className="primary" onClick={() => navigateTo(3)}>
+                {say("Připravit k tisku", "Prepare for printing")}
+              </button>
+            )}
+          </div>
+        )}
         {notice && (
           <div className="notice" role="status">
             {notice}
@@ -1348,6 +1382,13 @@ function App() {
             </div>
             <div className="warning">⚠ {t(locale, "fitWarning")}</div>
           </div>
+        )}
+        {step === 5 && (
+          <HelpPage
+            locale={locale}
+            onStart={() => navigateTo(1)}
+            onPrint={() => navigateTo(3)}
+          />
         )}
       </main>
       <dialog
