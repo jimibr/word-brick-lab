@@ -262,6 +262,9 @@ input[type="range"] {
   color: white;
   font-weight: 800;
 }
+.privacy-button-mark {
+  display: none;
+}
 .navigation {
   position: sticky;
   top: 0;
@@ -1429,8 +1432,23 @@ main {
   .help-button-label {
     display: none;
   }
-  .help-button {
+  .privacy-button-label {
+    display: none;
+  }
+  .help-button,
+  .privacy-button {
     padding-inline: 7px;
+  }
+  .privacy-button-mark {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    color: var(--accent);
+    font-family: Georgia, serif;
+    font-weight: 800;
   }
   .navigation {
     padding: 0 20px;

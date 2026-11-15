@@ -462,13 +462,19 @@ function App() {
           </button>
           <button
             type="button"
-            className="locale"
+            className="locale privacy-button"
+            aria-label={say("Soukromí", "Privacy")}
             onClick={() => {
               setPrivacyNotice("");
               privacyDialog.current?.showModal();
             }}
           >
-            {say("Soukromí", "Privacy")}
+            <span className="privacy-button-mark" aria-hidden="true">
+              i
+            </span>
+            <span className="privacy-button-label">
+              {say("Soukromí", "Privacy")}
+            </span>
           </button>
           <button
             className="locale"
