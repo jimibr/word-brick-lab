@@ -1,0 +1,2 @@
+import {describe,expect,it} from 'vitest';import {dimensions,studsForText} from './dimensions';
+describe('nominal dimensions',()=>{it.each([[2,15.8],[3,23.8],[4,31.8],[8,63.8],[16,127.8]])('computes 2x%s length',(n,length)=>expect(dimensions(n)).toEqual({width:15.8,length,height:9.6}));it('selects the smallest fitting length',()=>expect(studsForText('I',7,2).studs).toBe(2));it('blocks oversized text',()=>expect(studsForText('W'.repeat(30),10,5).studs).toBeNull())});

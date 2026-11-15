@@ -1,0 +1,10 @@
+node_modules
+dist
+playwright-report
+test-results
+*.local
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+WordBrickLab_Implementation_Prompt.md
+/.idea/

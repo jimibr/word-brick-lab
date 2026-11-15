@@ -1,0 +1,3 @@
+import { describe,expect,it } from 'vitest';import { computeCounts } from './quantities';import { tokenize } from './tokenize';import type { Sentence } from './types';
+const s=(id:string,text:string):Sentence=>({id,text,enabled:true,tokens:tokenize(text,id,'separate','whole')});
+describe('quantity algorithms',()=>{const sentences=[s('a','a cat and a dog'),s('b','a bird')];it('uses maximum multiplicity for a reusable set',()=>expect(computeCounts(sentences,'reusable').get('a')).toBe(2));it('sums multiplicity for simultaneous sentences',()=>expect(computeCounts(sentences,'simultaneous').get('a')).toBe(3));it('ignores disabled sentences',()=>expect(computeCounts([{...sentences[0]!,enabled:false},sentences[1]!],'simultaneous').get('a')).toBe(1))});
