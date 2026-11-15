@@ -1778,7 +1778,7 @@ main {
 }
 @media (max-width: 380px) {
   .app-header {
-    padding-inline: 12px;
+    padding-inline: 8px;
   }
   .brand {
     gap: 6px;
@@ -1787,20 +1787,27 @@ main {
     width: 32px;
   }
   .brand h1 {
-    font-size: 18px;
+    font-size: 16px;
+  }
+  .brand-lab {
+    display: none;
+  }
+  .header-actions {
+    gap: 4px;
   }
   .header-actions button {
-    min-width: 44px;
-    padding-inline: 7px;
+    width: 36px;
+    min-width: 36px;
+    padding-inline: 5px;
   }
   .navigation {
-    padding: 0 12px;
+    padding: 0 6px;
   }
   .navigation nav {
-    gap: 10px;
+    gap: 6px;
   }
   .navigation button {
-    font-size: 12px;
+    font-size: 11px;
   }
   .rule-pair,
   .kit-row {
