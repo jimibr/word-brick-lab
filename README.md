@@ -1,6 +1,10 @@
 # WordBrickLab
 
+[![CI](https://github.com/jimibr/word-brick-lab/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/jimibr/word-brick-lab/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/jimibr/word-brick-lab/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)](https://github.com/jimibr/word-brick-lab/actions/workflows/dynamic/github-code-scanning/codeql)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+**[Try the live demo](https://jimibr.github.io/word-brick-lab/)**
 
 WordBrickLab is a browser-only React application for designing printable, two-stud-wide language-learning bricks. It includes kit-first and sentence-first workflows, Czech and English UI, local autosave, editable token quantities, an interactive 3D preview, deterministic bed packing, binary STL/ZIP export, and versioned project JSON.
 
